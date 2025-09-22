@@ -4,6 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents import create_video_processor_agent, create_insight_extraction_agent
+from agents.insight_extractor import process_segment_with_structured_output, MultiSegmentAnalysis
 from utils.file_saver import save_analysis_results, save_analysis_summary
 
 
@@ -42,11 +43,11 @@ def run_complete_pipeline(video_url: str):
     
     print(f"\n VideoProcessorAgent completed - {len(segments_data)} segments created")
     
-    # Step 2: Run InsightExtractionAgent
-    print("\n PHASE 2: Insight Extraction & Storytelling")
+    # Step 2: Run InsightExtractionAgent with Structured Output
+    print("\n PHASE 2: Insight Extraction & Storytelling (Structured)")
     print("=" * 50)
     
-    agent_2_result = run_insight_extraction_pipeline(segments_data)
+    agent_2_result = run_structured_insight_extraction_pipeline(segments_data)
     
     if not agent_2_result:
         print("Pipeline failed at InsightExtractionAgent")
@@ -82,7 +83,76 @@ def run_complete_pipeline(video_url: str):
     
     return final_results
 
+def run_structured_insight_extraction_pipeline(segments_data):
+    """
+    Run InsightExtractionAgent with structured output for each segment
+    """
+    print("\n Starting Structured InsightExtractionAgent")
+    print("=" * 50)
+    
+    try:
+        import concurrent.futures
+        from typing import List
+        
+        print(f"📊 Processing {len(segments_data)} segments with structured output...")
+        
+        # Process segments in parallel with structured output
+        def process_single_segment_structured(segment_data, index):
+            segment_number = index + 1
+            print(f"🔄 Processing Segment {segment_number}...")
+            return process_segment_with_structured_output(segment_data, segment_number)
+        
+        # Use ThreadPoolExecutor to process segments in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(segments_data), 3)) as executor:
+            # Submit all segment processing tasks
+            future_to_segment = {
+                executor.submit(process_single_segment_structured, segment, i): i 
+                for i, segment in enumerate(segments_data)
+            }
+            
+            # Collect results in order
+            segment_analyses = [None] * len(segments_data)
+            for future in concurrent.futures.as_completed(future_to_segment):
+                segment_index = future_to_segment[future]
+                try:
+                    result = future.result()
+                    segment_analyses[segment_index] = result
+                    print(f"✅ Segment {segment_index + 1} completed: {result.segment_name}")
+                except Exception as e:
+                    print(f"❌ Segment {segment_index + 1} failed: {str(e)}")
+        
+        # Filter out any None results
+        valid_analyses = [analysis for analysis in segment_analyses if analysis is not None]
+        
+        # Create the final structured result
+        structured_result = MultiSegmentAnalysis(
+            segments=valid_analyses,
+            total_segments=len(valid_analyses)
+        )
+        
+        print(f"\n✅ Structured InsightExtractionAgent completed!")
+        print(f"📊 Successfully processed {len(valid_analyses)}/{len(segments_data)} segments")
+        print("STRUCTURED RESULTS:")
+        print("-" * 30)
+        
+        # Display summary of results
+        for analysis in valid_analyses:
+            print(f"📝 {analysis.segment_name}")
+            print(f"   📊 {len(analysis.key_insights)} insights, {len(analysis.actionable_takeaways)} takeaways")
+        
+        return {
+            "structured_analysis": structured_result,
+            "success": True,
+            "total_segments_processed": len(valid_analyses),
+            "processing_method": "structured_parallel"
+        }
+        
+    except Exception as e:
+        print(f"❌ Structured InsightExtractionAgent failed: {str(e)}")
+        return None
 
+
+# old approach
 def run_insight_extraction_pipeline(segments_data):
     """
     Run InsightExtractionAgent with segments data
