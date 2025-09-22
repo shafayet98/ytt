@@ -11,29 +11,32 @@ from functools import partial
 from utils.helpers import extract_video_id, process_single_segment
 
 
-
-
 @tool
-def get_video_transcript(video_url: str) -> Dict[str, Any]:
+def process_video_and_segment(video_url: str, num_segments: int = 5) -> Dict[str, Any]:
     """
-    Fetch YouTube video transcript and metadata.
+    Combined tool: Fetch YouTube transcript and create segments in one efficient step.
+    Agent never processes the raw transcript data - only receives final segments.
     
     Args:
         video_url: YouTube video URL or video ID
+        num_segments: Number of segments to create (default: 5)
         
     Returns:
-        Dictionary containing transcript snippets, metadata, and full transcript text
+        Dictionary with video metadata and segmented content
     """
     try:
+        print(f"🎬 Processing video and creating {num_segments} segments...")
+        
+        # Step 1: Get transcript (internal - no agent involvement)
         video_id = extract_video_id(video_url)
-
+        
         # Create API instance and fetch transcript
         youtube_transcript_api = YouTubeTranscriptApi()
         transcript = youtube_transcript_api.fetch(video_id)
-
+        
         # Get the transcript snippets
         snippets = transcript.snippets
-
+        
         transcript_snippets = []
         for snippet in snippets:
             transcript_snippets.append({
@@ -42,82 +45,19 @@ def get_video_transcript(video_url: str) -> Dict[str, Any]:
                 "duration": snippet.duration,
                 "end": snippet.start + snippet.duration
             })
-
-        # Create full transcript text
-        full_transcript = " ".join([snippet.text for snippet in snippets])
-
-        # Calculate total duration (from last snippet)
+        
+        # Calculate total duration
         total_duration = snippets[-1].start + snippets[-1].duration if snippets else 0
-
-        # Basic metadata
-        metadata = {
-            "video_id": video_id,
-            "total_duration": total_duration,
-            "title": f"Video {video_id}",
-            "channel": "Unknown",
-            "description": "No description available",
-            "total_characters": len(full_transcript),
-            "estimated_tokens": len(full_transcript) // 4  # Rough estimate
-        }
-
-        result = {
-            "transcript_snippets": transcript_snippets,
-            "metadata": metadata,
-            "full_transcript": full_transcript,
-            "total_snippets": len(transcript_snippets),
-            "success": True
-        }
         
-        return result
-    except Exception as e:
-        return {
-            "success": False,
-            "error": f"Failed to get YouTube transcript: {str(e)}",
-            "transcript_snippets": [],
-            "metadata": {},
-            "full_transcript": "",
-            "total_snippets": 0
-        }
-
-
-@tool
-def make_segments(transcript_snippets: List[Dict], total_duration: float, num_segments: int = 5) -> Dict[str, Any]:
-    """
-    Create time-based segments from transcript snippets with parallel processing.
-    
-    Args:
-        transcript_snippets: List of transcript snippets with timing info
-        total_duration: Total video duration in seconds
-        num_segments: Number of segments to create (default: 5)
+        print(f"📊 Fetched {len(transcript_snippets)} transcript snippets ({total_duration:.1f}s)")
         
-    Returns:
-        Dictionary with segments containing content and timing info
-    """
-    try:
-        
-        # Validation with better error messages
+        # Step 2: Create segments immediately (internal - with parallel processing)
         if not transcript_snippets:
             return {
                 "success": False,
-                "error": "No transcript snippets provided",
-                "segments": [],
-                "total_segments": 0
-            }
-        
-        if not isinstance(transcript_snippets, list):
-            return {
-                "success": False,
-                "error": f"transcript_snippets must be a list, got {type(transcript_snippets)}",
-                "segments": [],
-                "total_segments": 0
-            }
-            
-        if not isinstance(total_duration, (int, float)) or total_duration <= 0:
-            return {
-                "success": False,
-                "error": f"total_duration must be a positive number, got {type(total_duration)}: {total_duration}",
-                "segments": [],
-                "total_segments": 0
+                "error": "No transcript snippets found",
+                "video_metadata": {},
+                "segments": []
             }
         
         # Calculate segment duration
@@ -130,7 +70,9 @@ def make_segments(transcript_snippets: List[Dict], total_duration: float, num_se
             end_time = (i + 1) * segment_duration
             segment_ranges.append((i + 1, start_time, end_time, segment_duration))
         
-        # Process segments in parallel
+        print(f"🔄 Processing {num_segments} segments in parallel...")
+        
+        # Process segments in parallel (keeping your preferred approach)
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_segments) as executor:
             # Create partial function with transcript_snippets
             process_segment_func = partial(process_single_segment, transcript_snippets)
@@ -150,18 +92,35 @@ def make_segments(transcript_snippets: List[Dict], total_duration: float, num_se
         # Sort segments by ID to maintain order
         segments.sort(key=lambda x: x['id'])
         
+        # Create clean metadata (no massive transcript data)
+        video_metadata = {
+            "video_id": video_id,
+            "total_duration": total_duration,
+            "title": f"Video {video_id}",
+            "channel": "Unknown",
+            "description": "No description available",
+            "total_snippets": len(transcript_snippets),
+            "estimated_tokens": sum(seg.get('estimated_tokens', 0) for seg in segments)
+        }
+        
+        print(f"✅ Created {len(segments)} segments successfully")
+        
+        # Return only clean, manageable data for the agent
         return {
             "success": True,
+            "video_metadata": video_metadata,
             "segments": segments,
             "total_segments": num_segments,
             "segment_duration": segment_duration,
-            "segmentation_strategy": f"Time-based ({num_segments} segments) - Parallel Processing"
+            "processing_strategy": f"Combined processing with {num_segments} parallel segments",
+            "performance_note": "No agent data overload - processed internally"
         }
-
+        
     except Exception as e:
         return {
             "success": False,
-            "error": f"Failed to create segments: {str(e)}",
+            "error": f"Failed to process video and create segments: {str(e)}",
+            "video_metadata": {},
             "segments": [],
             "total_segments": 0
         }

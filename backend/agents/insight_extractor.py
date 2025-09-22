@@ -1,3 +1,4 @@
+from re import T
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -8,6 +9,13 @@ from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from config.settings import OPENAI_API_KEY, DEFAULT_MODEL
 from tools import text_splitter, process_chunks_parallel
+
+from utils.custom_callbacks import CleanToolCallbackHandler
+
+from pydantic import BaseModel, Field
+from typing import List
+
+
 
 # =============================== AGENT 2 ===============================
 
@@ -27,6 +35,7 @@ def create_insight_extraction_agent():
 
     # System prompt for InsightExtractionAgent
     system_prompt = """You are InsightExtractionAgent, a specialized agent for extracting insights and creating engaging stories from video content.
+
 
 Your job is to:
 1. Receive video segments from VideoProcessorAgent
@@ -75,7 +84,7 @@ Be intelligent about processing decisions and always aim for high-quality insigh
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
-        verbose=False,
+        verbose=True,
         return_intermediate_steps=True
     )
     

@@ -28,10 +28,11 @@ def run_complete_pipeline(video_url: str):
         return None
     
     # Extract segments data from Agent 1 result
+    # Extract segments data from Agent 1 result
     segments_data = None
     if agent_1_result.get("intermediate_steps"):
         for action, observation in agent_1_result["intermediate_steps"]:
-            if action.tool == 'make_segments' and isinstance(observation, dict) and observation.get('success'):
+            if action.tool == 'process_video_and_segment' and isinstance(observation, dict) and observation.get('success'):
                 segments_data = observation.get('segments', [])
                 break
     

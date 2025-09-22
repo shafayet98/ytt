@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-import logging
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +15,3 @@ DEFAULT_MAX_TOKENS = 50000
 # Video processing settings
 DEFAULT_SEGMENTS = 5
 CHUNK_OVERLAP = 1000
-
-# Configure logging
-logging.getLogger("langchain").setLevel(logging.WARNING)
