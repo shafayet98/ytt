@@ -9,6 +9,7 @@ from langchain.agents import create_openai_functions_agent, AgentExecutor
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from dotenv import load_dotenv
+from utils.logging_config import setup_logging
 import os
 
 from pydantic import BaseModel
@@ -17,8 +18,13 @@ import asyncio
 import concurrent.futures
 from functools import partial
 
+import logging
+logging.getLogger("langchain").setLevel(logging.WARNING)
+
 # Load environment variables
 load_dotenv()
+setup_logging()
+
 
 import sys
 import os

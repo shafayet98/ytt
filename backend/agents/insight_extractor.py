@@ -75,7 +75,7 @@ Be intelligent about processing decisions and always aim for high-quality insigh
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
-        verbose=True,
+        verbose=False,
         return_intermediate_steps=True
     )
     

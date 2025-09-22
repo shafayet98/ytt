@@ -68,12 +68,6 @@ def get_video_transcript(video_url: str) -> Dict[str, Any]:
             "success": True
         }
         
-        # Debug logging
-        print(f"🔍 get_video_transcript returning:")
-        print(f"   transcript_snippets: {len(transcript_snippets)} items")
-        print(f"   metadata.total_duration: {metadata.get('total_duration')}")
-        print(f"   success: {result['success']}")
-        
         return result
     except Exception as e:
         return {
@@ -100,13 +94,6 @@ def make_segments(transcript_snippets: List[Dict], total_duration: float, num_se
         Dictionary with segments containing content and timing info
     """
     try:
-        # Debug logging
-        print(f"🔍 make_segments called with:")
-        print(f"   transcript_snippets type: {type(transcript_snippets)}")
-        print(f"   transcript_snippets length: {len(transcript_snippets) if isinstance(transcript_snippets, list) else 'N/A'}")
-        print(f"   total_duration type: {type(total_duration)}")
-        print(f"   total_duration value: {total_duration}")
-        print(f"   num_segments: {num_segments}")
         
         # Validation with better error messages
         if not transcript_snippets:

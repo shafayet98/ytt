@@ -72,7 +72,7 @@ def create_video_processor_agent():
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
-        verbose=True,
+        verbose=False,
         return_intermediate_steps=True
     )
     

@@ -116,7 +116,7 @@ Please process all segments and provide comprehensive insights."""
         print("-" * 30)
         
         # Display the agent's output
-        print(f"Analysis Result: {result['output'][:500]}...")
+        # print(f"Analysis Result: {result['output'][:500]}...")
         
         return result
         
@@ -147,7 +147,7 @@ def run_video_processor_pipeline(video_url: str):
         print("-" * 30)
         
         # Regular agent output
-        print(f"Result: {result['output']}")
+        # print(f"Result: {result['output']}")
         
         if result.get("intermediate_steps"):
             print("\n🔧 TOOL CALLS MADE:")
