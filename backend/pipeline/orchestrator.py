@@ -9,7 +9,7 @@ from utils.file_saver import save_analysis_results, save_analysis_summary
 
 
 
-def run_complete_pipeline(video_url: str):
+def run_complete_pipeline(video_url: str, callback_level: str = "clean"):
     """
     Run the complete pipeline: VideoProcessorAgent -> InsightExtractionAgent
     """
@@ -47,7 +47,7 @@ def run_complete_pipeline(video_url: str):
     print("\n PHASE 2: Insight Extraction & Storytelling (Structured)")
     print("=" * 50)
     
-    agent_2_result = run_structured_insight_extraction_pipeline(segments_data)
+    agent_2_result = run_structured_insight_extraction_pipeline(segments_data, callback_level)
     
     if not agent_2_result:
         print("Pipeline failed at InsightExtractionAgent")
@@ -65,10 +65,10 @@ def run_complete_pipeline(video_url: str):
     print("=" * 50)
     
     # Save detailed JSON results
-    json_filepath = save_analysis_results(final_results)
+    json_filepath = save_analysis_results(final_results, "../outputs")
     
     # Save human-readable summary
-    summary_filepath = save_analysis_summary(final_results)
+    summary_filepath = save_analysis_summary(final_results, "../outputs")
     
     # Step 5: Display Final Results
     print("\n✅ COMPLETE PIPELINE SUCCESS!")
@@ -83,7 +83,7 @@ def run_complete_pipeline(video_url: str):
     
     return final_results
 
-def run_structured_insight_extraction_pipeline(segments_data):
+def run_structured_insight_extraction_pipeline(segments_data, callback_level="clean"):
     """
     Run InsightExtractionAgent with structured output for each segment
     """
@@ -100,7 +100,7 @@ def run_structured_insight_extraction_pipeline(segments_data):
         def process_single_segment_structured(segment_data, index):
             segment_number = index + 1
             print(f"🔄 Processing Segment {segment_number}...")
-            return process_segment_with_structured_output(segment_data, segment_number)
+            return process_segment_with_structured_output(segment_data, segment_number, callback_level)
         
         # Use ThreadPoolExecutor to process segments in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(segments_data), 3)) as executor:

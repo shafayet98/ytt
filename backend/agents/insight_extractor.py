@@ -10,7 +10,7 @@ from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from config.settings import OPENAI_API_KEY, DEFAULT_MODEL
 from tools import text_splitter, process_chunks_parallel
 
-from utils.custom_callbacks import CleanToolCallbackHandler
+from utils.custom_callbacks import CleanToolCallbackHandler, MinimalCallbackHandler, DetailedCallbackHandler
 
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -30,9 +30,27 @@ class MultiSegmentAnalysis(BaseModel):
     segments: List[SegmentAnalysis] = Field(description="List of analyzed segments")
     total_segments: int = Field(description="Total number of segments processed")
 
+# =============================== CALLBACK CONFIGURATION ===============================
+
+def get_callbacks(level="clean"):
+    """
+    Get callback handlers based on verbosity level
+    
+    Args:
+        level: "minimal", "clean", "detailed", or "none"
+    """
+    callback_options = {
+        "minimal": [MinimalCallbackHandler()],
+        "clean": [CleanToolCallbackHandler(show_input=True, show_timing=True)],
+        "clean_no_input": [CleanToolCallbackHandler(show_input=False, show_timing=True)],
+        "detailed": [DetailedCallbackHandler()],
+        "none": []
+    }
+    return callback_options.get(level, callback_options["clean"])
+
 # =============================== AGENT 2 ===============================
 
-def create_insight_extraction_agent():
+def create_insight_extraction_agent(callback_level="clean"):
     """
     Create InsightExtractionAgent that processes segments and extracts insights
     """
@@ -67,11 +85,12 @@ def create_insight_extraction_agent():
     # Create the agent
     agent = create_openai_functions_agent(llm, tools, prompt)
     
-    # Create the agent executor
+    # Create the agent executor with configurable callbacks
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
-        verbose=True,
+        verbose=False,
+        callbacks=get_callbacks(callback_level),
         return_intermediate_steps=True
     )
     
@@ -89,7 +108,7 @@ def create_structured_insight_extractor():
     
     return llm
 
-def process_segment_with_structured_output(segment_data: dict, segment_number: int) -> SegmentAnalysis:
+def process_segment_with_structured_output(segment_data: dict, segment_number: int, callback_level: str = "clean") -> SegmentAnalysis:
     """
     Process a single segment and return structured analysis.
     IMPROVED VERSION: Always returns structured output, even for large segments (>40k tokens).
@@ -107,7 +126,7 @@ def process_segment_with_structured_output(segment_data: dict, segment_number: i
         
         if estimated_tokens > 40000:
             # IMPROVED: Use agent with tools, then force structured output
-            agent = create_insight_extraction_agent()
+            agent = create_insight_extraction_agent(callback_level)
             
             # Step 1: Let agent process with tools
             input_text = f"""Process this large segment using your tools (text_splitter, process_chunks_parallel) if needed:

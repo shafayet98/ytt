@@ -30,15 +30,18 @@ from pipeline import run_complete_pipeline
 # Update main function
 def main():
     """
-    Main function to test the complete pipeline
+    Main function to test the complete pipeline with different callback levels
     """
     print("🎬 YouTube Video Analysis System - Complete Pipeline")
     print("=" * 60)
 
-    test_url = "https://www.youtube.com/watch?v=TK9dl48fsAI"
+    test_url = "https://www.youtube.com/watch?v=tDARtYjUiHs"
     
-    print("Testing Complete Pipeline (Agent 1 + Agent 2)...")
-    result = run_complete_pipeline(test_url)
+    # Choose callback level: "minimal", "clean", "detailed", or "none"
+    callback_level = "detailed"  # Change this to test different levels
+    
+    print(f"Testing Complete Pipeline with '{callback_level}' callbacks...")
+    result = run_complete_pipeline(test_url, callback_level=callback_level)
     
     if result:
         print("\n✨ Complete pipeline test completed successfully!")
