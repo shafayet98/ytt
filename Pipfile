@@ -9,6 +9,8 @@ langchain = "*"
 langchain-openai = "*"
 python-dotenv = "*"
 pydantic = "*"
+flask = "*"
+flask-cors = "*"
 
 [dev-packages]
 

@@ -261,3 +261,6 @@ api_cache/
 processing/
 temp_segments/
 temp_analysis/
+
+# PipeFIle
+Pipfile.lock
