@@ -13,9 +13,14 @@ import uuid
 import json
 from datetime import datetime
 
+# Get absolute path to frontend/static directory
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+static_folder = os.path.join(os.path.dirname(backend_dir), 'frontend', 'static')
 
+print(f"🔍 Static folder path: {static_folder}")
+print(f"✅ Static folder exists: {os.path.exists(static_folder)}")
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=static_folder, static_url_path='/static')
 CORS(app)  # Enable CORS for frontend communication
 
 # Store job status and results
@@ -52,10 +57,25 @@ def index():
 
 
 
-@app.route('/static/<path:filename>')
-def static_files(filename):
-    """Serve static files (CSS, JS)"""
-    return send_from_directory('../frontend/static', filename)
+@app.route('/debug-static')
+def debug_static():
+    """Debug static file setup"""
+    import os
+    
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    static_dir = os.path.join(os.path.dirname(backend_dir), 'frontend', 'static')
+    
+    files = []
+    if os.path.exists(static_dir):
+        files = os.listdir(static_dir)
+    
+    return jsonify({
+        "backend_dir": backend_dir,
+        "static_dir": static_dir,
+        "static_exists": os.path.exists(static_dir),
+        "files": files,
+        "flask_static_folder": app.static_folder
+    })
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze_video():

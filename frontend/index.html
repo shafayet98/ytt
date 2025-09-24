@@ -3,9 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>YouTube Analysis System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-    Still cooking...
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🎬 YouTube Analysis System</h1>
+            <p class="text-gray-600">AI-powered insights from YouTube videos</p>
+        </div>
+
+        <!-- Input Form -->
+        <div class="max-w-2xl mx-auto mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <form id="analysisForm" class="space-y-4">
+                    <div>
+                        <label for="videoUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                            YouTube Video URL
+                        </label>
+                        <input 
+                            type="url" 
+                            id="videoUrl" 
+                            name="videoUrl" 
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                        >
+                    </div>
+                    
+                    <div>
+                        <label for="callbackLevel" class="block text-sm font-medium text-gray-700 mb-2">
+                            Processing Level
+                        </label>
+                        <select 
+                            id="callbackLevel" 
+                            name="callbackLevel"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="clean">Clean (Recommended)</option>
+                            <option value="detailed">Detailed</option>
+                            <option value="minimal">Minimal</option>
+                            <option value="none">Silent</option>
+                        </select>
+                    </div>
+                    
+                    <button 
+                        type="submit" 
+                        id="analyzeBtn"
+                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        🚀 Analyze Video
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Status Section -->
+        <div id="statusSection" class="max-w-4xl mx-auto mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">Analysis Status</h2>
+                <div id="statusContent">
+                    <!-- Status updates will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="max-w-6xl mx-auto hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-6">📊 Analysis Results</h2>
+                <div id="resultsContent">
+                    <!-- Results will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Jobs -->
+        <div class="max-w-4xl mx-auto mt-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">📋 Recent Analyses</h2>
+                <div id="recentJobs">
+                    <!-- Recent jobs will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
 </body>
 </html>

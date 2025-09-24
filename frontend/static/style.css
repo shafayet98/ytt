@@ -1,0 +1,80 @@
+/* Custom styles for YouTube Analysis System */
+
+.loading-spinner {
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.status-queued {
+    @apply bg-yellow-100 border-yellow-400 text-yellow-800;
+}
+
+.status-processing {
+    @apply bg-blue-100 border-blue-400 text-blue-800;
+}
+
+.status-completed {
+    @apply bg-green-100 border-green-400 text-green-800;
+}
+
+.status-failed {
+    @apply bg-red-100 border-red-400 text-red-800;
+}
+
+.insight-card {
+    @apply bg-gray-50 rounded-lg p-4 mb-4 border-l-4 border-blue-500;
+}
+
+.insight-card h3 {
+    @apply text-lg font-semibold text-gray-800 mb-2;
+}
+
+.insight-card p {
+    @apply text-gray-600 mb-3;
+}
+
+.insight-list {
+    @apply space-y-2;
+}
+
+.insight-list li {
+    @apply flex items-start space-x-2;
+}
+
+.insight-list li::before {
+    content: "•";
+    @apply text-blue-500 font-bold;
+}
+
+.takeaway-list li::before {
+    content: "→";
+    @apply text-green-500 font-bold;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
