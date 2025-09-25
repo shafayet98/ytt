@@ -270,37 +270,19 @@ class YouTubeAnalyzer {
         
         resultsSection.classList.remove('hidden');
         
-        let html = `
-            <div class="mb-6">
-                <h3 class="text-lg font-semibold text-gray-700 mb-2">
-                    📈 Analysis Summary
-                </h3>
-                <p class="text-gray-600">
-                    Successfully analyzed ${data.total_segments} segments with structured insights.
-                </p>
-            </div>
-        `;
+        let html = ``;
 
         data.insights.forEach((segment, index) => {
             html += `
                 <div class="insight-card fade-in" style="animation-delay: ${index * 0.1}s">
-                    <h3>📝 ${segment.segment_name}</h3>
+                    <p>${segment.segment_name}</p>
                     <p><strong>Summary:</strong> ${segment.summary}</p>
                     
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <h4 class="font-semibold text-gray-700 mb-2">💡 Key Insights</h4>
-                            <ul class="insight-list">
-                                ${segment.key_insights.map(insight => `<li>${insight}</li>`).join('')}
-                            </ul>
-                        </div>
-                        
-                        <div>
-                            <h4 class="font-semibold text-gray-700 mb-2">🎯 Actionable Takeaways</h4>
-                            <ul class="insight-list takeaway-list">
-                                ${segment.actionable_takeaways.map(takeaway => `<li>${takeaway}</li>`).join('')}
-                            </ul>
-                        </div>
+                    <div>
+                        <p class="font-semibold text-black mb-2 mt-2">Insights</p>
+                        <ul class="insight-list">
+                            ${segment.key_insights.map(insight => `<li>${insight}</li>`).join('')}
+                        </ul>
                     </div>
                 </div>
             `;
