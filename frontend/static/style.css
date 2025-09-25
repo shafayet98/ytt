@@ -122,3 +122,90 @@
 .hidden {
     display: none;
 }
+
+/* Progress Messages */
+.progress-container {
+    background: white;
+    border-radius: 8px;
+}
+
+.progress-message {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border-left: 3px solid #e5e7eb;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.progress-message.info {
+    border-left-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.progress-message.progress {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.progress-message.success {
+    border-left-color: #10b981;
+    background: #ecfdf5;
+}
+
+.progress-message.error {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+
+.message-icon {
+    font-size: 16px;
+    margin-top: 2px;
+}
+
+.message-text {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #374151;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading spinner for progress */
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f4f6;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Pulse animation for processing button */
+.pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .7; }
+}

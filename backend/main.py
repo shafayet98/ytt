@@ -2,16 +2,16 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-
-
 from pipeline import run_complete_pipeline
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 import threading
 import uuid
 import json
 from datetime import datetime
+import queue
+import time
 
 # Get absolute path to frontend/static directory
 backend_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,37 +25,172 @@ CORS(app)  # Enable CORS for frontend communication
 
 # Store job status and results
 jobs = {}
+# Store progress messages for each job
+job_progress = {}
+
+class ProgressCapture:
+    def __init__(self, job_id):
+        self.job_id = job_id
+        self.original_stdout = sys.stdout
+        
+        # Simple whitelist of messages you want to stream
+        self.important_messages = [
+            "🎬 Processing video",
+            "📊 Fetched",
+            "🔄 Processing",
+            "✅ Created",
+            "✅ Segment",
+            "Starting VideoProcessorAgent",
+            "VideoProcessorAgent completed",
+            "Starting Structured InsightExtractionAgent",
+            "InsightExtractionAgent completed",
+            "PHASE 1:",
+            "PHASE 2:",
+            "💾 SAVING RESULTS",
+            "💾 Analysis results saved",
+            "📝 Summary saved",
+            "✅ COMPLETE PIPELINE SUCCESS"
+        ]
+    
+    def __enter__(self):
+        sys.stdout = self
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout = self.original_stdout
+    
+    def write(self, text):
+        self.original_stdout.write(text)
+        self.original_stdout.flush()
+        
+        text = text.strip()
+        
+        # Only capture if it contains any of our important keywords
+        if any(keyword in text for keyword in self.important_messages):
+            if self.job_id not in job_progress:
+                job_progress[self.job_id] = queue.Queue()
+            
+            job_progress[self.job_id].put({
+                'timestamp': datetime.now().isoformat(),
+                'message': text,
+                'type': 'progress'
+            })
+    
+    def flush(self):
+        self.original_stdout.flush()
 
 def process_video_async(job_id, video_url, callback_level="clean"):
-    """Process video in background thread"""
+    """Process video in background thread with selective progress capture"""
     try:
         jobs[job_id]["status"] = "processing"
         jobs[job_id]["message"] = "Starting video analysis..."
         
-        # Run the complete pipeline
-        result = run_complete_pipeline(video_url, callback_level=callback_level)
+        # Initialize progress queue
+        job_progress[job_id] = queue.Queue()
+        
+        # Add initial progress message
+        job_progress[job_id].put({
+            'timestamp': datetime.now().isoformat(),
+            'message': '🚀 Initializing YouTube Analysis Pipeline',
+            'type': 'progress'
+        })
+        
+        # Capture only meaningful progress messages during pipeline execution
+        with ProgressCapture(job_id):
+            result = run_complete_pipeline(video_url, callback_level=callback_level)
         
         if result:
             jobs[job_id]["status"] = "completed"
             jobs[job_id]["message"] = "Analysis completed successfully!"
             jobs[job_id]["result"] = result
+            
+            # Add completion message
+            job_progress[job_id].put({
+                'timestamp': datetime.now().isoformat(),
+                'message': '🎉 Analysis completed successfully!',
+                'type': 'completion'
+            })
         else:
             jobs[job_id]["status"] = "failed"
             jobs[job_id]["message"] = "Analysis failed. Please try again."
             
+            job_progress[job_id].put({
+                'timestamp': datetime.now().isoformat(),
+                'message': '❌ Analysis failed. Please try again.',
+                'type': 'error'
+            })
+            
     except Exception as e:
         jobs[job_id]["status"] = "failed"
         jobs[job_id]["message"] = f"Error: {str(e)}"
-
-
-
+        
+        job_progress[job_id].put({
+            'timestamp': datetime.now().isoformat(),
+            'message': f'💥 Error: {str(e)}',
+            'type': 'error'
+        })
 
 @app.route('/')
 def index():
     """Serve the main HTML page"""
     return send_from_directory('../frontend', 'index.html')
 
-
+@app.route('/api/progress/<job_id>')
+def stream_progress(job_id):
+    """Server-Sent Events endpoint for real-time progress updates"""
+    def generate():
+        # Wait a bit for the job to initialize if it doesn't exist yet
+        max_wait_time = 5  # seconds
+        wait_interval = 0.5  # seconds
+        waited = 0
+        
+        while job_id not in job_progress and waited < max_wait_time:
+            time.sleep(wait_interval)
+            waited += wait_interval
+        
+        if job_id not in job_progress:
+            yield f"data: {json.dumps({'error': 'Job not found or not started yet'})}\n\n"
+            return
+            
+        progress_queue = job_progress[job_id]
+        
+        try:
+            while True:
+                try:
+                    # Get message with timeout
+                    message = progress_queue.get(timeout=2)
+                    yield f"data: {json.dumps(message)}\n\n"
+                    
+                    # If this is a completion or error message, close the stream
+                    if message.get('type') in ['completion', 'error']:
+                        break
+                        
+                except queue.Empty:
+                    # Send heartbeat to keep connection alive
+                    yield f"data: {json.dumps({'type': 'heartbeat'})}\n\n"
+                    
+                    # Check if job is completed or failed
+                    if job_id in jobs:
+                        job_status = jobs[job_id]["status"]
+                        if job_status in ['completed', 'failed']:
+                            break
+                            
+        except GeneratorExit:
+            # Client disconnected
+            pass
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e), 'type': 'error'})}\n\n"
+    
+    return Response(
+        generate(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Cache-Control'
+        }
+    )
 
 @app.route('/debug-static')
 def debug_static():
@@ -116,8 +251,6 @@ def analyze_video():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-
 @app.route('/api/status/<job_id>', methods=['GET'])
 def get_job_status(job_id):
     """Get job status and results"""
@@ -153,8 +286,6 @@ def get_job_status(job_id):
     
     return jsonify(response)
 
-
-
 @app.route('/api/jobs', methods=['GET'])
 def list_jobs():
     """List all jobs"""
@@ -179,7 +310,6 @@ def health_check():
         "timestamp": datetime.now().isoformat()
     })
 
-
 if __name__ == '__main__':
     print("🚀 Starting YouTube Analysis API Server")
     print("📡 API will be available at: http://localhost:8000")
@@ -187,28 +317,3 @@ if __name__ == '__main__':
     print("=" * 50)
     
     app.run(debug=True, host='0.0.0.0', port=8000)
-
-
-# Update main function
-# def main():
-#     """
-#     Main function to test the complete pipeline with different callback levels
-#     """
-#     print("🎬 YouTube Video Analysis System - Complete Pipeline")
-#     print("=" * 60)
-
-#     test_url = "https://www.youtube.com/watch?v=pdJQ8iVTwj8"
-    
-#     # Choose callback level: "minimal", "clean", "detailed", or "none"
-#     callback_level = "detailed"  # Change this to test different levels
-    
-#     print(f"Testing Complete Pipeline with '{callback_level}' callbacks...")
-#     result = run_complete_pipeline(test_url, callback_level=callback_level)
-    
-#     if result:
-#         print("\n✨ Complete pipeline test completed successfully!")
-#     else:
-#         print("\n❌ Complete pipeline test failed!")
-
-# if __name__ == "__main__":
-#     main()

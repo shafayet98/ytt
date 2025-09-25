@@ -3,6 +3,8 @@ class YouTubeAnalyzer {
     constructor() {
         this.currentJobId = null;
         this.statusInterval = null;
+        this.eventSource = null;
+        this.jobCompleted = false; // Track if job is completed
         this.init();
     }
 
@@ -19,7 +21,7 @@ class YouTubeAnalyzer {
         e.preventDefault();
         
         const videoUrl = document.getElementById('videoUrl').value;
-        const callbackLevel = 'clean'; // ❌ Set default value instead of reading from form
+        const callbackLevel = 'clean';
         
         if (!videoUrl) {
             this.showError('Please enter a YouTube URL');
@@ -31,8 +33,9 @@ class YouTubeAnalyzer {
 
     async startAnalysis(videoUrl, callbackLevel) {
         try {
-            // this.showStatus('Submitting analysis request...', 'processing');
             this.disableForm(true);
+            this.clearPreviousResults();
+            this.jobCompleted = false; // Reset completion flag
 
             const response = await fetch('/api/analyze', {
                 method: 'POST',
@@ -49,7 +52,12 @@ class YouTubeAnalyzer {
 
             if (response.ok) {
                 this.currentJobId = data.job_id;
-                // this.showStatus(`Analysis started! Job ID: ${data.job_id}`, 'processing');
+                
+                // Wait a moment for backend to initialize, then start progress stream
+                setTimeout(() => {
+                    this.startProgressStream();
+                }, 500); // 500ms delay
+                
                 this.startStatusPolling();
             } else {
                 this.showError(data.error || 'Failed to start analysis');
@@ -61,6 +69,137 @@ class YouTubeAnalyzer {
         }
     }
 
+    startProgressStream(retryCount = 0) {
+        if (this.eventSource) {
+            this.eventSource.close();
+        }
+
+        // Don't start SSE if job is already completed
+        if (this.jobCompleted) {
+            console.log('Job already completed, skipping SSE connection');
+            return;
+        }
+
+        // Show progress section
+        this.showProgressSection();
+
+        // Connect to Server-Sent Events stream
+        this.eventSource = new EventSource(`/api/progress/${this.currentJobId}`);
+        
+        this.eventSource.onopen = () => {
+            console.log('SSE connection opened successfully');
+        };
+        
+        this.eventSource.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                
+                // Skip heartbeat messages
+                if (data.type === 'heartbeat') {
+                    return;
+                }
+                
+                if (data.type === 'progress') {
+                    this.addProgressMessage(data.message, data.timestamp);
+                } else if (data.type === 'completion') {
+                    this.addProgressMessage(data.message, data.timestamp, 'success');
+                    this.jobCompleted = true; // Mark job as completed
+                } else if (data.type === 'error') {
+                    this.addProgressMessage(data.message, data.timestamp, 'error');
+                    this.jobCompleted = true; // Mark job as completed (failed)
+                }
+            } catch (e) {
+                console.error('Error parsing SSE data:', e);
+            }
+        };
+
+        this.eventSource.onerror = (error) => {
+            console.log('SSE connection error/close event');
+            
+            // Check the ready state to understand what happened
+            if (this.eventSource.readyState === EventSource.CONNECTING) {
+                console.log('SSE is connecting...');
+            } else if (this.eventSource.readyState === EventSource.CLOSED) {
+                console.log('SSE connection closed');
+                
+                // Only retry if the job is NOT completed and we haven't exceeded retry limit
+                if (!this.jobCompleted && retryCount < 3) {
+                    const retryDelay = (retryCount + 1) * 1000; // 1s, 2s, 3s
+                    console.log(`Job not completed, retrying SSE connection in ${retryDelay}ms (attempt ${retryCount + 1}/3)`);
+                    
+                    setTimeout(() => {
+                        this.startProgressStream(retryCount + 1);
+                    }, retryDelay);
+                } else if (this.jobCompleted) {
+                    console.log('Job completed, SSE connection closed normally');
+                } else {
+                    console.log('Max SSE retry attempts reached, falling back to polling only');
+                    this.addProgressMessage('⚠️ Real-time updates unavailable, using polling fallback', new Date().toISOString(), 'info');
+                }
+            }
+        };
+    }
+
+    showProgressSection() {
+        const statusSection = document.getElementById('statusSection');
+        const statusContent = document.getElementById('statusContent');
+        
+        statusSection.classList.remove('hidden');
+        statusContent.innerHTML = `
+            <div class="progress-container">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <div class="loading-spinner mr-3"></div>
+                    Real-time Progress
+                </h3>
+                <div id="progressMessages" class="space-y-2 max-h-96 overflow-y-auto bg-gray-50 p-4 rounded-lg">
+                    <!-- Progress messages will appear here -->
+                </div>
+            </div>
+        `;
+    }
+
+    addProgressMessage(message, timestamp, type = 'info') {
+        const progressMessages = document.getElementById('progressMessages');
+        if (!progressMessages) return;
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `progress-message ${type} fade-in`;
+        
+        const time = new Date(timestamp).toLocaleTimeString();
+        const typeIcon = this.getMessageIcon(type);
+        
+        messageDiv.innerHTML = `
+            <div class="flex items-start space-x-2">
+                <span class="message-icon">${typeIcon}</span>
+                <div class="flex-1">
+                    <div class="message-text">${this.escapeHtml(message)}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            </div>
+        `;
+
+        progressMessages.appendChild(messageDiv);
+        
+        // Auto-scroll to bottom
+        progressMessages.scrollTop = progressMessages.scrollHeight;
+    }
+
+    getMessageIcon(type) {
+        const icons = {
+            'info': '📊',
+            'progress': '🔄',
+            'success': '✅',
+            'error': '❌'
+        };
+        return icons[type] || '📝';
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     startStatusPolling() {
         if (this.statusInterval) {
             clearInterval(this.statusInterval);
@@ -68,7 +207,7 @@ class YouTubeAnalyzer {
 
         this.statusInterval = setInterval(() => {
             this.checkJobStatus();
-        }, 2000); // Check every 2 seconds
+        }, 3000); // Check every 3 seconds
 
         // Check immediately
         this.checkJobStatus();
@@ -82,15 +221,17 @@ class YouTubeAnalyzer {
             const data = await response.json();
 
             if (response.ok) {
-                // this.updateStatus(data);
-
                 if (data.status === 'completed') {
+                    this.jobCompleted = true; // Mark as completed
                     this.showResults(data);
                     this.stopStatusPolling();
+                    this.closeProgressStream();
                     this.disableForm(false);
                 } else if (data.status === 'failed') {
+                    this.jobCompleted = true; // Mark as completed (failed)
                     this.showError(data.message);
                     this.stopStatusPolling();
+                    this.closeProgressStream();
                     this.disableForm(false);
                 }
             }
@@ -106,39 +247,21 @@ class YouTubeAnalyzer {
         }
     }
 
-    // updateStatus(data) {
-    //     const statusClass = `status-${data.status}`;
-    //     const emoji = this.getStatusEmoji(data.status);
-        
-    //     this.showStatus(`${emoji} ${data.message}`, data.status);
-    // }
-
-    getStatusEmoji(status) {
-        const emojis = {
-            'queued': '⏳',
-            'processing': '🔄',
-            'completed': '✅',
-            'failed': '❌'
-        };
-        return emojis[status] || '📊';
+    closeProgressStream() {
+        if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+        }
     }
 
-    // showStatus(message, status) {
-    //     const statusSection = document.getElementById('statusSection');
-    //     const statusContent = document.getElementById('statusContent');
+    clearPreviousResults() {
+        const statusSection = document.getElementById('statusSection');
+        const resultsSection = document.getElementById('resultsSection');
         
-    //     statusSection.classList.remove('hidden');
-        
-    //     const statusClass = `status-${status}`;
-    //     statusContent.innerHTML = `
-    //         <div class="border-l-4 p-4 ${statusClass}">
-    //             <div class="flex items-center">
-    //                 ${status === 'processing' ? '<div class="loading-spinner mr-4"></div>' : ''}
-    //                 <p class="font-medium">${message}</p>
-    //             </div>
-    //         </div>
-    //     `;
-    // }
+        statusSection.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        this.jobCompleted = false; // Reset completion flag
+    }
 
     showResults(data) {
         if (!data.insights) return;
@@ -185,11 +308,21 @@ class YouTubeAnalyzer {
         });
 
         resultsContent.innerHTML = html;
-        // this.loadRecentJobs(); // ❌ Remove this line
     }
 
     showError(message) {
-        this.showStatus(`❌ Error: ${message}`, 'failed');
+        const statusSection = document.getElementById('statusSection');
+        const statusContent = document.getElementById('statusContent');
+        
+        statusSection.classList.remove('hidden');
+        statusContent.innerHTML = `
+            <div class="border-l-4 border-red-500 bg-red-50 p-4">
+                <div class="flex items-center">
+                    <span class="text-red-500 mr-2">❌</span>
+                    <p class="font-medium text-red-700">Error: ${message}</p>
+                </div>
+            </div>
+        `;
     }
 
     disableForm(disabled) {
@@ -203,7 +336,7 @@ class YouTubeAnalyzer {
             btn.textContent = 'Processing...';
             btn.classList.add('pulse');
         } else {
-            btn.textContent = 'Analyze'; // ❌ Match your current button text
+            btn.textContent = 'Analyze';
             btn.classList.remove('pulse');
         }
     }
