@@ -7,6 +7,8 @@
     <title>YouTube Analysis System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/static/style.css">
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
@@ -24,10 +26,11 @@
                 <form id="analysisForm" class="space-y-4">
                     <div>
                         <div class="flex gap-2">
-                            <input type="url" id="videoUrl" name="videoUrl" placeholder="https://www.youtube.com/watch?v=..."
+                            <input type="url" id="videoUrl" name="videoUrl"
+                                placeholder="https://www.youtube.com/watch?v=..."
                                 class="flex-1 px-3 py-2 border border-black rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                                 required>
-                            
+
                             <button type="submit" id="analyzeBtn"
                                 class="px-6 py-2 bg-black text-white border border-black rounded-md hover:bg-white hover:text-black hover:border-black focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-all duration-300 ease-in-out">
                                 Analyze
@@ -39,19 +42,16 @@
         </div>
 
         <!-- Status Section -->
-        <div id="statusSection" class="max-w-4xl mx-auto mb-8 hidden">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold mb-4">Analysis Status</h2>
-                <div id="statusContent">
-                    <!-- Status updates will appear here -->
-                </div>
+        <div id="statusSection" class="max-w-lg ml-auto mb-8 hidden">
+            <div id="statusContent">
+                <!-- Status updates will appear here -->
             </div>
         </div>
 
         <!-- Results Section -->
         <div id="resultsSection" class="max-w-6xl mx-auto hidden">
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-semibold mb-6">📊 Analysis Results</h2>
+                <h2 class="text-2xl font-semibold mb-6">Analysis Results</h2>
                 <div id="resultsContent">
                     <!-- Results will appear here -->
                 </div>

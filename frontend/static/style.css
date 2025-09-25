@@ -1,5 +1,10 @@
 /* Custom styles for YouTube Analysis System */
 
+
+body{
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
 .loading-spinner {
     border: 4px solid #f3f4f6;
     border-top: 4px solid #3b82f6;
@@ -130,11 +135,8 @@
 }
 
 .progress-message {
-    padding: 8px 12px;
-    border-radius: 6px;
+    text-align: right;
     margin-bottom: 8px;
-    border-left: 3px solid #e5e7eb;
-    background: white;
     transition: all 0.3s ease;
 }
 
@@ -165,7 +167,7 @@
 
 .message-text {
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 14px;
+    font-size: 10px;
     line-height: 1.4;
     color: #374151;
 }

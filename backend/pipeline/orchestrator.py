@@ -71,15 +71,15 @@ def run_complete_pipeline(video_url: str, callback_level: str = "clean"):
     summary_filepath = save_analysis_summary(final_results, "../outputs")
     
     # Step 5: Display Final Results
-    print("\n✅ COMPLETE PIPELINE SUCCESS!")
+    print("\nCOMPLETE PIPELINE SUCCESS!")
     print("=" * 50)
-    print("✅ VideoProcessorAgent: Fetched transcript and created segments")
-    print("✅ InsightExtractionAgent: Extracted insights and created stories")
+    print("VideoProcessorAgent: Fetched transcript and created segments")
+    print("InsightExtractionAgent: Extracted insights and created stories")
     
     if json_filepath:
-        print(f"✅ Detailed results saved: {json_filepath}")
+        print(f"Detailed results saved: {json_filepath}")
     if summary_filepath:
-        print(f"✅ Summary saved: {summary_filepath}")
+        print(f"Summary saved: {summary_filepath}")
     
     return final_results
 
@@ -90,16 +90,17 @@ def run_structured_insight_extraction_pipeline(segments_data, callback_level="cl
     print("\n Starting Structured InsightExtractionAgent")
     print("=" * 50)
     
+    
     try:
         import concurrent.futures
         from typing import List
         
-        print(f"📊 Processing {len(segments_data)} segments with structured output...")
+        print(f"Processing {len(segments_data)} segments with structured output...")
         
         # Process segments in parallel with structured output
         def process_single_segment_structured(segment_data, index):
             segment_number = index + 1
-            print(f"🔄 Processing Segment {segment_number}...")
+            print(f"Processing Segment {segment_number}...")
             return process_segment_with_structured_output(segment_data, segment_number, callback_level)
         
         # Use ThreadPoolExecutor to process segments in parallel
@@ -130,7 +131,7 @@ def run_structured_insight_extraction_pipeline(segments_data, callback_level="cl
             total_segments=len(valid_analyses)
         )
         
-        print(f"\n✅ Structured InsightExtractionAgent completed!")
+        print(f"\n Structured InsightExtractionAgent completed!")
         print(f"📊 Successfully processed {len(valid_analyses)}/{len(segments_data)} segments")
         print("STRUCTURED RESULTS:")
         print("-" * 30)
@@ -200,7 +201,7 @@ def run_video_processor_pipeline(video_url: str):
     """
     Run VideoProcessorAgent with a YouTube URL
     """
-    print("Starting VideoProcessorAgent")
+    print("Initializing VideoProcessorAgent")
     print("=" * 50)
     print(f"Video URL: {video_url}")
     print()
@@ -213,7 +214,7 @@ def run_video_processor_pipeline(video_url: str):
         input_text = f"Please process this YouTube video and create 5 segments: {video_url}"
         result = agent.invoke({"input": input_text})
         
-        print("\n VideoProcessorAgent completed successfully!")
+        print("\n VideoProcessorAgent finished processing")
         print("AGENT OUTPUT:")
         print("-" * 30)
         

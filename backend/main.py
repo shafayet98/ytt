@@ -33,23 +33,24 @@ class ProgressCapture:
         self.job_id = job_id
         self.original_stdout = sys.stdout
         
-        # Simple whitelist of messages you want to stream
+        # Exact messages you want to show in real-time (based on actual print statements)
         self.important_messages = [
-            "🎬 Processing video",
-            "📊 Fetched",
-            "🔄 Processing",
-            "✅ Created",
-            "✅ Segment",
-            "Starting VideoProcessorAgent",
-            "VideoProcessorAgent completed",
+            # Video processing messages
+            "Processing video and creating",
+            "Fetched",
+            "transcript snippets",
+            "Processing",
+            "segments in parallel",
+            "Created",
+            "segments successfully",
+            
+            # Agent lifecycle messages  
             "Starting Structured InsightExtractionAgent",
-            "InsightExtractionAgent completed",
-            "PHASE 1:",
-            "PHASE 2:",
-            "💾 SAVING RESULTS",
-            "💾 Analysis results saved",
-            "📝 Summary saved",
-            "✅ COMPLETE PIPELINE SUCCESS"
+            "VideoProcessorAgent completed",
+            "Structured InsightExtractionAgent completed",
+            "Processing",
+            "segments with structured output",
+            
         ]
     
     def __enter__(self):
@@ -91,7 +92,7 @@ def process_video_async(job_id, video_url, callback_level="clean"):
         # Add initial progress message
         job_progress[job_id].put({
             'timestamp': datetime.now().isoformat(),
-            'message': '🚀 Initializing YouTube Analysis Pipeline',
+            'message': 'Initializing YouTube Analysis Pipeline',
             'type': 'progress'
         })
         
@@ -107,7 +108,7 @@ def process_video_async(job_id, video_url, callback_level="clean"):
             # Add completion message
             job_progress[job_id].put({
                 'timestamp': datetime.now().isoformat(),
-                'message': '🎉 Analysis completed successfully!',
+                'message': 'Analysis completed successfully!',
                 'type': 'completion'
             })
         else:

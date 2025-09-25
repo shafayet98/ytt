@@ -25,7 +25,7 @@ def process_video_and_segment(video_url: str, num_segments: int = 5) -> Dict[str
         Dictionary with video metadata and segmented content
     """
     try:
-        print(f"🎬 Processing video and creating {num_segments} segments...")
+        print(f"Processing video and creating segments...")
         
         # Step 1: Get transcript (internal - no agent involvement)
         video_id = extract_video_id(video_url)
@@ -49,7 +49,7 @@ def process_video_and_segment(video_url: str, num_segments: int = 5) -> Dict[str
         # Calculate total duration
         total_duration = snippets[-1].start + snippets[-1].duration if snippets else 0
         
-        print(f"📊 Fetched {len(transcript_snippets)} transcript snippets ({total_duration:.1f}s)")
+        print(f"Fetched {len(transcript_snippets)} transcript snippets ({total_duration:.1f}s)")
         
         # Step 2: Create segments immediately (internal - with parallel processing)
         if not transcript_snippets:
@@ -70,7 +70,7 @@ def process_video_and_segment(video_url: str, num_segments: int = 5) -> Dict[str
             end_time = (i + 1) * segment_duration
             segment_ranges.append((i + 1, start_time, end_time, segment_duration))
         
-        print(f"🔄 Processing {num_segments} segments in parallel...")
+        print(f"Processing segments in parallel...")
         
         # Process segments in parallel (keeping your preferred approach)
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_segments) as executor:
@@ -103,7 +103,7 @@ def process_video_and_segment(video_url: str, num_segments: int = 5) -> Dict[str
             "estimated_tokens": sum(seg.get('estimated_tokens', 0) for seg in segments)
         }
         
-        print(f"✅ Created {len(segments)} segments successfully")
+        print(f"Created all the segments successfully")
         
         # Return only clean, manageable data for the agent
         return {

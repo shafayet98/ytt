@@ -147,11 +147,8 @@ class YouTubeAnalyzer {
         statusSection.classList.remove('hidden');
         statusContent.innerHTML = `
             <div class="progress-container">
-                <h3 class="text-lg font-semibold mb-4 flex items-center">
-                    <div class="loading-spinner mr-3"></div>
-                    Real-time Progress
-                </h3>
-                <div id="progressMessages" class="space-y-2 max-h-96 overflow-y-auto bg-gray-50 p-4 rounded-lg">
+                
+                <div id="progressMessages" class="space-y-2 max-h-32 overflow-y-auto bg-gray-50 p-4 rounded-lg">
                     <!-- Progress messages will appear here -->
                 </div>
             </div>
@@ -163,22 +160,24 @@ class YouTubeAnalyzer {
         if (!progressMessages) return;
 
         const messageDiv = document.createElement('div');
-        messageDiv.className = `progress-message ${type} fade-in`;
+        messageDiv.className = `progress-message fade-in`;
         
         const time = new Date(timestamp).toLocaleTimeString();
         const typeIcon = this.getMessageIcon(type);
         
         messageDiv.innerHTML = `
             <div class="flex items-start space-x-2">
-                <span class="message-icon">${typeIcon}</span>
                 <div class="flex-1">
                     <div class="message-text">${this.escapeHtml(message)}</div>
-                    <div class="message-time">${time}</div>
                 </div>
+                <span class="message-icon"><i data-lucide="check-circle" class="w-3 h-3 text-black"></i></span>
             </div>
         `;
 
         progressMessages.appendChild(messageDiv);
+        
+        // ✅ Initialize Lucide icons for the newly added content
+        lucide.createIcons();
         
         // Auto-scroll to bottom
         progressMessages.scrollTop = progressMessages.scrollHeight;
@@ -186,12 +185,12 @@ class YouTubeAnalyzer {
 
     getMessageIcon(type) {
         const icons = {
-            'info': '📊',
-            'progress': '🔄',
-            'success': '✅',
-            'error': '❌'
+            'info': '<i data-lucide="info" class="w-4 h-4 text-blue-500"></i>',
+            'progress': '<i data-lucide="loader-2" class="w-4 h-4 text-yellow-500 animate-spin"></i>',
+            'success': '<i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>', // Your circle-check icon!
+            'error': '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i>'
         };
-        return icons[type] || '📝';
+        return icons[type] || '<i data-lucide="file-text" class="w-4 h-4"></i>';
     }
 
     escapeHtml(text) {
