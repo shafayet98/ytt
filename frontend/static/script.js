@@ -8,7 +8,6 @@ class YouTubeAnalyzer {
 
     init() {
         this.bindEvents();
-        this.loadRecentJobs();
     }
 
     bindEvents() {
@@ -20,7 +19,7 @@ class YouTubeAnalyzer {
         e.preventDefault();
         
         const videoUrl = document.getElementById('videoUrl').value;
-        const callbackLevel = document.getElementById('callbackLevel').value;
+        const callbackLevel = 'clean'; // ❌ Set default value instead of reading from form
         
         if (!videoUrl) {
             this.showError('Please enter a YouTube URL');
@@ -32,7 +31,7 @@ class YouTubeAnalyzer {
 
     async startAnalysis(videoUrl, callbackLevel) {
         try {
-            this.showStatus('Submitting analysis request...', 'processing');
+            // this.showStatus('Submitting analysis request...', 'processing');
             this.disableForm(true);
 
             const response = await fetch('/api/analyze', {
@@ -50,7 +49,7 @@ class YouTubeAnalyzer {
 
             if (response.ok) {
                 this.currentJobId = data.job_id;
-                this.showStatus(`Analysis started! Job ID: ${data.job_id}`, 'processing');
+                // this.showStatus(`Analysis started! Job ID: ${data.job_id}`, 'processing');
                 this.startStatusPolling();
             } else {
                 this.showError(data.error || 'Failed to start analysis');
@@ -83,7 +82,7 @@ class YouTubeAnalyzer {
             const data = await response.json();
 
             if (response.ok) {
-                this.updateStatus(data);
+                // this.updateStatus(data);
 
                 if (data.status === 'completed') {
                     this.showResults(data);
@@ -107,12 +106,12 @@ class YouTubeAnalyzer {
         }
     }
 
-    updateStatus(data) {
-        const statusClass = `status-${data.status}`;
-        const emoji = this.getStatusEmoji(data.status);
+    // updateStatus(data) {
+    //     const statusClass = `status-${data.status}`;
+    //     const emoji = this.getStatusEmoji(data.status);
         
-        this.showStatus(`${emoji} ${data.message}`, data.status);
-    }
+    //     this.showStatus(`${emoji} ${data.message}`, data.status);
+    // }
 
     getStatusEmoji(status) {
         const emojis = {
@@ -124,22 +123,22 @@ class YouTubeAnalyzer {
         return emojis[status] || '📊';
     }
 
-    showStatus(message, status) {
-        const statusSection = document.getElementById('statusSection');
-        const statusContent = document.getElementById('statusContent');
+    // showStatus(message, status) {
+    //     const statusSection = document.getElementById('statusSection');
+    //     const statusContent = document.getElementById('statusContent');
         
-        statusSection.classList.remove('hidden');
+    //     statusSection.classList.remove('hidden');
         
-        const statusClass = `status-${status}`;
-        statusContent.innerHTML = `
-            <div class="border-l-4 p-4 ${statusClass}">
-                <div class="flex items-center">
-                    ${status === 'processing' ? '<div class="loading-spinner mr-4"></div>' : ''}
-                    <p class="font-medium">${message}</p>
-                </div>
-            </div>
-        `;
-    }
+    //     const statusClass = `status-${status}`;
+    //     statusContent.innerHTML = `
+    //         <div class="border-l-4 p-4 ${statusClass}">
+    //             <div class="flex items-center">
+    //                 ${status === 'processing' ? '<div class="loading-spinner mr-4"></div>' : ''}
+    //                 <p class="font-medium">${message}</p>
+    //             </div>
+    //         </div>
+    //     `;
+    // }
 
     showResults(data) {
         if (!data.insights) return;
@@ -186,7 +185,7 @@ class YouTubeAnalyzer {
         });
 
         resultsContent.innerHTML = html;
-        this.loadRecentJobs(); // Refresh recent jobs
+        // this.loadRecentJobs(); // ❌ Remove this line
     }
 
     showError(message) {
@@ -201,56 +200,12 @@ class YouTubeAnalyzer {
         inputs.forEach(input => input.disabled = disabled);
         
         if (disabled) {
-            btn.textContent = '🔄 Processing...';
+            btn.textContent = 'Processing...';
             btn.classList.add('pulse');
         } else {
-            btn.textContent = '🚀 Analyze Video';
+            btn.textContent = 'Analyze'; // ❌ Match your current button text
             btn.classList.remove('pulse');
         }
-    }
-
-    async loadRecentJobs() {
-        try {
-            const response = await fetch('/api/jobs');
-            const data = await response.json();
-            
-            if (response.ok && data.jobs) {
-                this.displayRecentJobs(data.jobs);
-            }
-        } catch (error) {
-            console.error('Failed to load recent jobs:', error);
-        }
-    }
-
-    displayRecentJobs(jobs) {
-        const recentJobsDiv = document.getElementById('recentJobs');
-        
-        if (jobs.length === 0) {
-            recentJobsDiv.innerHTML = '<p class="text-gray-500">No recent analyses</p>';
-            return;
-        }
-
-        const html = jobs.slice(0, 5).map(job => {
-            const emoji = this.getStatusEmoji(job.status);
-            const statusClass = `status-${job.status}`;
-            const date = new Date(job.created_at).toLocaleString();
-            
-            return `
-                <div class="border-l-4 p-3 mb-2 ${statusClass}">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="font-medium">${emoji} ${job.message}</p>
-                            <p class="text-sm opacity-75">${job.video_url}</p>
-                        </div>
-                        <div class="text-sm opacity-75">
-                            ${date}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        recentJobsDiv.innerHTML = html;
     }
 }
 
