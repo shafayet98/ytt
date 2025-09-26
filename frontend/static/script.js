@@ -270,23 +270,34 @@ class YouTubeAnalyzer {
         
         resultsSection.classList.remove('hidden');
         
-        let html = ``;
+        let html = `
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        `;
 
         data.insights.forEach((segment, index) => {
             html += `
-                <div class="insight-card fade-in" style="animation-delay: ${index * 0.1}s">
-                    <p>${segment.segment_name}</p>
-                    <p><strong>Summary:</strong> ${segment.summary}</p>
+                <div class="insight-card fade-in p-4 border" style="animation-delay: ${index * 0.1}s">
+                    <p class="seg_name mb-2 text-black">${segment.segment_name}</p>
+                    <p class="seg_summary text-black mb-3"><strong>Summary:</strong> ${segment.summary}</p>
                     
                     <div>
-                        <p class="font-semibold text-black mb-2 mt-2">Insights</p>
-                        <ul class="insight-list">
-                            ${segment.key_insights.map(insight => `<li>${insight}</li>`).join('')}
+                        <p style="font-weight: bold; font-size: 13px; text-decoration: underline;" class="text-black mb-2">Insights</p>
+                        <ul class="insight-list space-y-1">
+                            ${segment.key_insights.map(insight => `<li class="">${insight}</li> <hr>`).join('')}
                         </ul>
                     </div>
+                    
+                    <!--<div class="mt-4">
+                        <p class="mb-2">Takeaways</p>
+                        <ul class="insight-list space-y-1">
+                            ${segment.actionable_takeaways.map(takeaway => `<li class="">${takeaway}</li>`).join('')}
+                        </ul>
+                    </div>-->
                 </div>
             `;
         });
+
+        html += `</div>`; // Close the grid container
 
         resultsContent.innerHTML = html;
     }
