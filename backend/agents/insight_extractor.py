@@ -69,7 +69,7 @@ def create_insight_extraction_agent(callback_level="clean"):
 
     1. Process video segments to extract 3-5 key insights
     2. Create a meaningful segment name (not generic "Segment X")  
-    3. Write an engaging 2-3 sentence summary
+    3. Write an engaging 2-3 sentence summary [DO NOT START WITH "In this segment", MAKE IT LIKE A STORY]
     4. Identify 2-3 actionable takeaways
 
 
@@ -135,7 +135,7 @@ Segment {segment_number}: {segment_data}
 
 After processing, provide:
 1. A meaningful segment name based on content
-2. An engaging 2-3 sentence summary
+2. An engaging 2-3 sentence summary [DO NOT START WITH "In this segment", MAKE IT LIKE A STORY]
 3. 3-5 key insights
 4. 2-3 actionable takeaways"""
             
@@ -172,7 +172,7 @@ Character Count: {segment_data.get('character_count', 0)}
 
 Provide:
 1. A meaningful segment name based on the actual content (not generic "Segment X")
-2. An engaging 2-3 sentence summary
+2. An engaging 2-3 sentence summary [DO NOT START WITH "In this segment", MAKE IT LIKE A STORY]
 3. 3-5 key insights from the content
 4. 2-3 actionable takeaways for viewers
 
