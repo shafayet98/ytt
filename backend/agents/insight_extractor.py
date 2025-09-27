@@ -131,13 +131,13 @@ def process_segment_with_structured_output(segment_data: dict, segment_number: i
             # Step 1: Let agent process with tools
             input_text = f"""Process this large segment using your tools (text_splitter, process_chunks_parallel) if needed:
             
-Segment {segment_number}: {segment_data}
+            Segment {segment_number}: {segment_data}
 
-After processing, provide:
-1. A meaningful segment name based on content
-2. An engaging 2-3 sentence summary [DO NOT START WITH "In this segment", MAKE IT LIKE A STORY]
-3. 3-5 key insights
-4. 2-3 actionable takeaways"""
+            After processing, provide:
+            1. A meaningful segment name based on content
+            2. An engaging 2-3 sentence summary [DO NOT START WITH "In this segment", MAKE IT LIKE A STORY]
+            3. 3-5 key insights
+            4. 2-3 actionable takeaways"""
             
             agent_result = agent.invoke({"input": input_text})
             processed_content = agent_result['output']
@@ -147,14 +147,14 @@ After processing, provide:
             
             structured_prompt = f"""Based on this analysis of Segment {segment_number}, create structured output:
 
-PROCESSED ANALYSIS:
-{processed_content}
+            PROCESSED ANALYSIS:
+            {processed_content}
 
-ORIGINAL SEGMENT DATA:
-Duration: {segment_data.get('duration', 'Unknown')} seconds
-Character Count: {segment_data.get('character_count', 0)}
+            ORIGINAL SEGMENT DATA:
+            Duration: {segment_data.get('duration', 'Unknown')} seconds
+            Character Count: {segment_data.get('character_count', 0)}
 
-Extract and structure the analysis into the required format."""
+            Extract and structure the analysis into the required format."""
 
             result = structured_llm.invoke(structured_prompt)
             result.segment_number = segment_number
@@ -165,18 +165,18 @@ Extract and structure the analysis into the required format."""
             structured_llm = create_structured_insight_extractor()
             prompt = f"""Analyze this video segment and provide structured insights:
 
-SEGMENT {segment_number} DATA:
-Content: {content}
-Duration: {segment_data.get('duration', 'Unknown')} seconds
-Character Count: {segment_data.get('character_count', 0)}
+            SEGMENT {segment_number} DATA:
+            Content: {content}
+            Duration: {segment_data.get('duration', 'Unknown')} seconds
+            Character Count: {segment_data.get('character_count', 0)}
 
-Provide:
-1. A meaningful segment name based on the actual content (not generic "Segment X")
-2. An engaging 2-3 sentence summary [DO NOT START WITH "In this segment", MAKE IT LIKE A STORY]
-3. 3-5 key insights from the content
-4. 2-3 actionable takeaways for viewers
+            Provide:
+            1. A meaningful segment name based on the actual content (not generic "Segment X")
+            2. An engaging 2-3 sentence summary [DO NOT START WITH "In this segment", MAKE IT LIKE A STORY]
+            3. 3-5 key insights from the content
+            4. 2-3 actionable takeaways for viewers
 
-Focus on extracting valuable, specific insights rather than generic statements."""
+            Focus on extracting valuable, specific insights rather than generic statements."""
 
             result = structured_llm.invoke(prompt)
             result.segment_number = segment_number
