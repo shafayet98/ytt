@@ -89,7 +89,7 @@ def create_insight_extraction_agent(callback_level="clean"):
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
-        verbose=False,
+        verbose=True,
         callbacks=get_callbacks(callback_level),
         return_intermediate_steps=True
     )

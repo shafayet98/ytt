@@ -59,7 +59,7 @@ def create_video_processor_agent():
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
-        verbose=False,
+        verbose=True,
         callbacks=[CleanToolCallbackHandler(show_input=True, show_timing=True)], 
         return_intermediate_steps=True
     )
