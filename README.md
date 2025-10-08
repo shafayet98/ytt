@@ -11,7 +11,7 @@ TL;DW is an agentic system designed to process long-form YouTube content (podcas
 
 ## 🎥 Live Demo
 
-https://github.com/shafayet98/ytt/assets/your-user-id/your-video-file.mp4
+https://github.com/shafayet98/ytt/raw/main/demo/Demo2.mp4
 
 *Watch TL;DW analyze a 3 hour 34 minute YouTube video and deliver structured insights in just 28 seconds*
 
