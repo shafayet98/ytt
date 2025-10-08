@@ -8,6 +8,10 @@ An intelligent AI-powered system that analyzes YouTube videos and extracts struc
 
 TL;DW is an agentic system designed to process long-form YouTube content (podcasts, lectures, educational videos) and provide structured analysis. The system can handle videos of any length, including 3+ hour content, by intelligently segmenting and processing transcripts in parallel.
 
+## Demo
+
+https://github.com/shafayet98/ytt/tree/main/demo/Demo2.mp4
+
 ### Key Features
 
 - ⚡ **Real-time Processing**: Live progress updates via Server-Sent Events
