@@ -10,7 +10,7 @@ TL;DW is an agentic system designed to process long-form YouTube content (podcas
 
 ## Demo
 
-https://github.com/shafayet98/ytt/tree/main/demo/Demo2.mp4
+<video src="demo/Demo2.mp4" controls width="600"></video>
 
 ### Key Features
 
