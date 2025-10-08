@@ -1,5 +1,6 @@
 # TL;DW (Too Long; Didn't Watch)
 
+
 An intelligent AI-powered system that analyzes YouTube videos and extracts structured insights, summaries, and actionable takeaways in real-time.
 
 ![TL;DW Demo](https://img.shields.io/badge/Status-Active-green) ![Python](https://img.shields.io/badge/Python-3.11-blue) ![LangChain](https://img.shields.io/badge/LangChain-Latest-orange) ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-red)
@@ -8,7 +9,13 @@ An intelligent AI-powered system that analyzes YouTube videos and extracts struc
 
 TL;DW is an agentic system designed to process long-form YouTube content (podcasts, lectures, educational videos) and provide structured analysis. The system can handle videos of any length, including 3+ hour content, by intelligently segmenting and processing transcripts in parallel.
 
-## Demo
+## 🎥 Live Demo
+
+https://github.com/shafayet98/ytt/assets/your-user-id/your-video-file.mp4
+
+*Watch TL;DW analyze a 3 hour 34 minute YouTube video and deliver structured insights in just 28 seconds*
+
+---
 
 <video src="demo/Demo2.mp4" controls width="600"></video>
 
